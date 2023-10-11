@@ -573,6 +573,22 @@ TEST(xMatrixTest, OperatorMultiply) {
     EXPECT_EQ(result(1, 1), 50.0);
 }
 
+// Unit test for operator* function
+TEST(xMatrixTest, OperatorMultiplyNum)
+{
+    xMatrix mat(2, 2);
+    mat(0, 0) = 1.0;
+    mat(0, 1) = 2.0;
+    mat(1, 0) = 3.0;
+    mat(1, 1) = 4.0;
+    double val = 4;
+    xMatrix result = mat * val;
+    EXPECT_EQ(result(0, 0), 4.0);
+    EXPECT_EQ(result(0, 1), 8.0);
+    EXPECT_EQ(result(1, 0), 12.0);
+    EXPECT_EQ(result(1, 1), 16.0);
+}
+
 // Unit test for operator== function
 TEST(xMatrixTest, OperatorEqual) {
     xMatrix mat1(2, 2);
@@ -642,7 +658,7 @@ TEST(xMatrixTest, OperatorMinusEqual) {
     EXPECT_EQ(mat1(1, 1), -4.0);
 }
 // Unit test for operator*= function
-TEST(xMatrixTest, OperatorMultiplyEqual) {
+TEST(xMatrixTest, OperatorMultiplyEqualMatrix) {
     xMatrix mat1(2, 2);
     mat1(0, 0) = 1.0;
     mat1(0, 1) = 2.0;
@@ -659,6 +675,24 @@ TEST(xMatrixTest, OperatorMultiplyEqual) {
     EXPECT_EQ(mat1(1, 0), 43.0);
     EXPECT_EQ(mat1(1, 1), 50.0);
 }
+
+// Unit test for operator*= function
+TEST(xMatrixTest, OperatorMultiplyEqualNum)
+{
+    xMatrix mat(2, 2);
+    mat(0, 0) = 1.0;
+    mat(0, 1) = 2.0;
+    mat(1, 0) = 3.0;
+    mat(1, 1) = 4.0;
+
+    mat *= 3;
+
+    EXPECT_EQ(mat(0, 0), 3);
+    EXPECT_EQ(mat(0, 1), 6);
+    EXPECT_EQ(mat(1, 0), 9);
+    EXPECT_EQ(mat(1, 1), 12);
+}
+
 // Unit test for operator() function
 TEST(xMatrixTest, OperatorParentheses) {
     xMatrix mat(2, 2);
@@ -689,6 +723,34 @@ TEST(xMatrixTest, PrintMatrix) {
     mat.PrintMatrix();
     std::string output = testing::internal::GetCapturedStdout();
     EXPECT_EQ(output, "1 2 3 \n4 5 6 \n");
+}
+
+// Unit test for friend function
+TEST(xMatrixTest, FriendOperatorMul)
+{
+    xMatrix mat(3, 3);
+    mat(0, 0) = 1;
+    mat(0, 1) = 2;
+    mat(0, 2) = 3;
+    mat(1, 0) = 4;
+    mat(1, 1) = 5;
+    mat(1, 2) = 6;
+    mat(2, 0) = 7;
+    mat(2, 1) = 8;
+    mat(2, 2) = 9;
+
+    double val = 2.5;
+    xMatrix result = val * mat;
+
+    EXPECT_DOUBLE_EQ(result(0, 0), 2.5);
+    EXPECT_DOUBLE_EQ(result(0, 1), 5);
+    EXPECT_DOUBLE_EQ(result(0, 2), 7.5);
+    EXPECT_DOUBLE_EQ(result(1, 0), 10);
+    EXPECT_DOUBLE_EQ(result(1, 1), 12.5);
+    EXPECT_DOUBLE_EQ(result(1, 2), 15);
+    EXPECT_DOUBLE_EQ(result(2, 0), 17.5);
+    EXPECT_DOUBLE_EQ(result(2, 1), 20);
+    EXPECT_DOUBLE_EQ(result(2, 2), 22.5);
 }
 
 /////////////////////////////////
