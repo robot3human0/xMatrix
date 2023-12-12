@@ -336,8 +336,8 @@ void xMatrix::DeleteMatrix() {
 }
 
 void xMatrix::PrintMatrix() {
-    for (int i = 0; i < rows_; i++) {
-        for (int j = 0; j < cols_; j++) {
+    for (int i = 0; i < rows_; ++i) {
+        for (int j = 0; j < cols_; ++j) {
             std::cout << matrix_[i][j] << " ";
         }
         std::cout << std::endl;
@@ -347,4 +347,25 @@ void xMatrix::PrintMatrix() {
 xMatrix operator*(const double num, const xMatrix& mat) {
     xMatrix result = mat * num;
     return result;
+}
+
+void xMatrix::LoadMatrixFromFile(const std::string &src) {
+    std::ifstream openFile;
+    openFile.open(src);
+    char c;
+    if (openFile.is_open()) {
+        for (int i = 0; i < rows_; ++i) {
+            for (int j = 0; j < cols_; ++j) {
+                c = openFile.get();
+                if (c == '0') {
+                    matrix_[i][j] = 0;
+                } else if (c == '1') {
+                    matrix_[i][j] = 1;
+                }
+            }
+        }
+    } else {
+        throw std::invalid_argument("Something goes wrong, make sure that the file exist");
+        return;
+    }
 }

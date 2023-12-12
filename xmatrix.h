@@ -4,6 +4,8 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
+#include <fstream>
+#include <string>
 
 const double EPS = 1e-8;
 
@@ -27,6 +29,7 @@ public:
     void SubMatrix(const xMatrix& other);
     void MulNumber(const double num);
     void MulMatrix(const xMatrix& other);
+    void LoadMatrixFromFile(const std::string& src);
     xMatrix Transpose() const;
     xMatrix CalcComplements() const;
     double Determinant() const;
