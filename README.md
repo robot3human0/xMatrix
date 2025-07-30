@@ -1,6 +1,7 @@
-# xMatrix lib
+# xMatrix
 
 A C++ implementation of a matrix class designed for 3D transformation matrices, used in a 3D Viewer project. The class supports basic matrix operations such as addition, subtraction, multiplication, transposition, determinant calculation, and matrix inversion.
+
 
 ## Features
 - **Matrix Operations**: Addition (`+`), subtraction (`-`), multiplication (`*`), scalar multiplication, and equality comparison (`==`).
@@ -9,6 +10,7 @@ A C++ implementation of a matrix class designed for 3D transformation matrices, 
 - **Efficient Memory Management**: Uses `std::vector` for dynamic memory and `std::move` for efficient assignment.
 - **Accessors**: Provides safe access to elements via `operator()(int r, int c)` (const and non-const versions).
 
+
 ## Installation
 1. Clone the repository:
    ```bash
@@ -16,6 +18,7 @@ A C++ implementation of a matrix class designed for 3D transformation matrices, 
    ```
 2. Include xmatrix.h and xmatrix.cc in your C++ project.
 3. Compile with a C++11 or later compiler (e.g., g++ -std=c++11).
+
 
 ## Usage
 ```C++
@@ -50,6 +53,11 @@ Transposed matrix:
 3 6
 ```
 
+Notes
+* The default constructor creates a 3x3 matrix initialized with zeros.
+* The Matrix class does not support empty matrices (0x0 or 0xN) to ensure valid operations for 3D transformations.
+
+
 ## Building and Testing
 * Dependencies: Requires a C++11-compliant compiler (e.g., g++, clang++).
 * Tests: Unit tests are provided using Google Test (see tests/ directory).
@@ -60,8 +68,10 @@ Project Structure
 * src/xmatrix.cc: Implementation of matrix operations.
 * tests/: Unit tests for validating functionality.
 
+
 ## Contributing
 Contributions are welcome! Please submit a pull request or open an issue for suggestions.
+
 
 ## Licence
 MIT License (see LICENSE file).
