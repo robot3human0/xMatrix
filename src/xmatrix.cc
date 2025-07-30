@@ -5,6 +5,20 @@
 #include <iostream>
 
 namespace xMatrix {
+
+namespace {
+
+Matrix::MatrixType CreateMatrix(const int r, const int c) {
+  if (r < 1 || c < 1) {
+    throw std::invalid_argument(
+        "Input arguments must be positive and not equal to zero");
+  }
+
+  return Matrix::MatrixType(r * c, 0.0);
+}
+
+}  // namespace
+
 // CONSTRUCTORS & DESTRUCTORS
 Matrix::Matrix() : rows_(3), cols_(3) { matrix_ = CreateMatrix(rows_, cols_); }
 
@@ -18,7 +32,7 @@ Matrix::Matrix(const Matrix& o) : rows_(o.rows_), cols_(o.cols_) {
   if (!matrix_.empty()) {
     for (int i = 0; i < o.rows_; i++) {
       for (int j = 0; j < o.cols_; j++) {
-        matrix_[i][j] = o.matrix_[i][j];
+        matrix_[i * cols_ + j] = o.matrix_[i * o.cols_ + j];
       }
     }
   } else {
@@ -27,11 +41,12 @@ Matrix::Matrix(const Matrix& o) : rows_(o.rows_), cols_(o.cols_) {
 }
 
 Matrix::Matrix(Matrix&& o) noexcept : rows_(o.rows_), cols_(o.cols_) {
-  matrix_ = o.matrix_;
-  o.DeleteMatrix();
+  matrix_ = std::move(o.matrix_);
+  o.rows_ = 0;
+  o.cols_ = 0;
 }
 
-Matrix::~Matrix() { DeleteMatrix(); }
+Matrix::~Matrix() {}
 
 // ACCESSORS
 int Matrix::GetRows() const { return rows_; }
@@ -44,19 +59,15 @@ void Matrix::SetRows(const int r) {
     throw std::invalid_argument("Rows must be a positive integer");
   }
 
-  if (r == rows_) {
-    return;
-  }
+  if (r == rows_) return;
 
-  std::vector<std::vector<double>> new_matrix = CreateMatrix(r, cols_);
-  for (int i = 0; i < std::min(r, rows_); i++) {
-    for (int j = 0; j < cols_; j++) {
-      new_matrix[i][j] = matrix_[i][j];
-    }
-  }
+  MatrixType new_matrix = CreateMatrix(r, cols_);
 
-  this->DeleteMatrix();
-  matrix_ = new_matrix;
+  for (int i = 0; i < std::min(r, rows_); i++)
+    for (int j = 0; j < cols_; j++)
+      new_matrix[i * cols_ + j] = matrix_[i * cols_ + j];
+
+  matrix_ = std::move(new_matrix);
   rows_ = r;
 }
 
@@ -65,53 +76,41 @@ void Matrix::SetCols(const int c) {
     throw std::invalid_argument("Cols must be a positive integer");
   }
 
-  if (c == cols_) {
-    return;
-  }
+  if (c == cols_) return;
 
-  std::vector<std::vector<double>> new_matrix = CreateMatrix(rows_, c);
-  for (int i = 0; i < rows_; i++) {
-    for (int j = 0; j < std::min(c, cols_); j++) {
-      new_matrix[i][j] = matrix_[i][j];
-    }
-  }
+  MatrixType new_matrix = CreateMatrix(rows_, c);
 
-  this->DeleteMatrix();
-  matrix_ = new_matrix;
+  for (int i = 0; i < rows_; i++)
+    for (int j = 0; j < std::min(c, cols_); j++)
+      new_matrix[i * c + j] = matrix_[i * cols_ + j];
+
+  matrix_ = std::move(new_matrix);
   cols_ = c;
 }
 
 void Matrix::Resize(const int r, const int c) {
-  if (r == rows_ && c == cols_) {
-    return;
-  }
+  if (r == rows_ && c == cols_) return;
 
-  std::vector<std::vector<double>> new_matrix = CreateMatrix(r, c);
+  MatrixType new_matrix = CreateMatrix(r, c);
 
-  if (!new_matrix.empty()) {
-    for (int i = 0; i < std::min(r, rows_); i++) {
-      for (int j = 0; j < std::min(c, cols_); j++) {
-        new_matrix[i][j] = matrix_[i][j];
-      }
-    }
-  }
+  if (!new_matrix.empty())
+    for (int i = 0; i < std::min(r, rows_); i++)
+      for (int j = 0; j < std::min(c, cols_); j++)
+        new_matrix[i * c + j] = matrix_[i * cols_ + j];
 
-  this->DeleteMatrix();
-  matrix_ = new_matrix;
+  matrix_ = std::move(new_matrix);
   rows_ = r;
   cols_ = c;
 }
 
 // MATRIX FUNCTIONS
-bool Matrix::sEqMatrix(const Matrix& other) const {
-  if (this->rows_ == other.rows_ && this->cols_ == other.cols_) {
-    for (int i = 0; i < rows_; i++)
-      for (int j = 0; j < cols_; j++)
-        if (fabs(this->matrix_[i][j] - other.matrix_[i][j]) >= EPS)
-          return false;
-  } else {
-    return false;
-  }
+bool Matrix::IsEqual(const Matrix& other) const {
+  if (rows_ != other.rows_ || cols_ != other.cols_) return false;
+
+  for (int i = 0; i < rows_; i++)
+    for (int j = 0; j < cols_; j++)
+      if (fabs(matrix_[i * cols_ + j] - other.matrix_[i * cols_ + j]) >= EPS)
+        return false;
 
   return true;
 }
@@ -123,7 +122,7 @@ void Matrix::SumMatrix(const Matrix& other) {
 
   for (int i = 0; i < rows_; i++)
     for (int j = 0; j < cols_; j++)
-      matrix_[i][j] += other.matrix_[i][j];
+      matrix_[i * cols_ + j] += other.matrix_[i * cols_ + j];
 }
 
 void Matrix::SubMatrix(const Matrix& other) {
@@ -133,13 +132,12 @@ void Matrix::SubMatrix(const Matrix& other) {
 
   for (int i = 0; i < rows_; i++)
     for (int j = 0; j < cols_; j++)
-      matrix_[i][j] -= other.matrix_[i][j];
+      matrix_[i * cols_ + j] -= other.matrix_[i * cols_ + j];
 }
 
 void Matrix::MulNumber(const double num) {
   for (int i = 0; i < rows_; i++)
-    for (int j = 0; j < cols_; j++)
-      matrix_[i][j] *= num;
+    for (int j = 0; j < cols_; j++) matrix_[i * cols_ + j] *= num;
 }
 
 void Matrix::MulMatrix(const Matrix& other) {
@@ -154,17 +152,17 @@ void Matrix::MulMatrix(const Matrix& other) {
   for (int i = 0; i < result.rows_; i++)
     for (int j = 0; j < result.cols_; j++)
       for (int f = 0; f < cols_; f++)
-        result.matrix_[i][j] += matrix_[i][f] * other.matrix_[f][j];
+        result.matrix_[i * result.cols_ + j] +=
+            matrix_[i * cols_ + f] * other.matrix_[f * other.cols_ + j];
 
-  *this = result;
+  *this = std::move(result);
 }
 
 Matrix Matrix::Transpose() const {
   Matrix result(cols_, rows_);
 
   for (int i = 0; i < cols_; i++)
-    for (int j = 0; j < rows_; j++)
-      result.matrix_[i][j] = matrix_[j][i];
+    for (int j = 0; j < rows_; j++) result(i, j) = (*this)(j, i);
 
   return result;
 }
@@ -173,16 +171,16 @@ Matrix Matrix::CalcComplements() const {
   Matrix result(rows_, cols_);
 
   if (this->rows_ == 1) {
-    result.matrix_[0][0] = 1;
+    result.matrix_[0] = 1;
   } else {
     Matrix minor(rows_ - 1, cols_ - 1);
 
     for (int i = 0; i < rows_; i++) {
       for (int j = 0; j < cols_; j++) {
-        MinorMatrix(&minor, i, j);
-        double det = minor.Determinant();
-        double sign = ((i + j) % 2 == 0) ? 1 : -1;
-        result.matrix_[i][j] = sign * det;
+        MinorMatrix(minor, i, j);
+        const double det = minor.Determinant();
+        const double sign = (i + j) % 2 == 0 ? 1 : -1;
+        result.matrix_[i * cols_ + j] = sign * det;
       }
     }
   }
@@ -190,19 +188,17 @@ Matrix Matrix::CalcComplements() const {
   return result;
 }
 
-void Matrix::MinorMatrix(Matrix* minor, const int using_row,
+void Matrix::MinorMatrix(Matrix& minor, const int using_row,
                          const int using_col) const {
   int i, j, k, l;
 
-  for (i = 0, k = 0; k < minor->rows_; i++) {
-
+  for (i = 0, k = 0; k < minor.rows_; i++) {
     if (using_row == i) continue;
 
-    for (j = 0, l = 0; l < minor->rows_; j++) {
-
+    for (j = 0, l = 0; l < minor.rows_; j++) {
       if (using_col == j) continue;
 
-      minor->matrix_[k][l] = matrix_[i][j];
+      minor.matrix_[k * minor.cols_ + l] = matrix_[i * cols_ + j];
       l++;
     }
 
@@ -214,23 +210,22 @@ double Matrix::Determinant() const {
   double result = 0;
 
   if (rows_ < 1 || rows_ != cols_) {
-    throw std::invalid_argument("Incorect size");
+    throw std::invalid_argument("Incorrect size");
   }
 
   if (rows_ == 1) {
-    result = matrix_[0][0];
+    result = matrix_[0];
   } else if (rows_ == 2) {
-    result += matrix_[0][0] * matrix_[1][1];
-    result += matrix_[0][1] * matrix_[1][0] * -1;
+    result = matrix_[0] * matrix_[3] - matrix_[1] * matrix_[2];
   } else {
     double temp_result = 0;
     char minus_flag = 1;
     Matrix minor(rows_ - 1, cols_ - 1);
 
     for (int i = 0; i < rows_; i++) {
-      MinorMatrix(&minor, 0, i);
+      MinorMatrix(minor, 0, i);
       temp_result = minor.Determinant();
-      result += temp_result * minus_flag * matrix_[0][i];
+      result += temp_result * minus_flag * matrix_[i]; // 0 * cols_ + i
       minus_flag = -minus_flag;
     }
   }
@@ -246,7 +241,7 @@ Matrix Matrix::InverseMatrix() const {
   }
 
   if (rows_ == 1) {
-    result.matrix_[0][0] = 1 / matrix_[0][0];
+    result.matrix_[0] = 1 / matrix_[0];
   } else {
     double det = 0;
     det = this->Determinant();
@@ -292,7 +287,7 @@ Matrix Matrix::operator*(const double num) const {
 }
 
 bool Matrix::operator==(const Matrix& other) const {
-  return this->sEqMatrix(other);
+  return this->IsEqual(other);
 }
 
 Matrix& Matrix::operator=(const Matrix& other) {
@@ -300,7 +295,7 @@ Matrix& Matrix::operator=(const Matrix& other) {
 
   for (int i = 0; i < other.rows_; i++)
     for (int j = 0; j < other.cols_; j++)
-      matrix_[i][j] = other.matrix_[i][j];
+      matrix_[i * cols_ + j] = other.matrix_[i * cols_ + j];
 
   return *this;
 }
@@ -330,66 +325,30 @@ double& Matrix::operator()(const int r, const int c) {
     throw std::invalid_argument("Incorrect index");
   }
 
-  return matrix_[r][c];
+  return matrix_[r * cols_ + c];
+}
+
+const double& Matrix::operator()(int r, int c) const {
+  if (r >= rows_ || c >= cols_ || r < 0 || c < 0) {
+    throw std::invalid_argument("Incorrect index");
+  }
+
+  return matrix_[r * cols_ + c];
 }
 
 //  SUPPORT FUNCTION
-std::vector<std::vector<double>> Matrix::CreateMatrix(const int r,
-                                                      const int c) {
-  std::vector<std::vector<double>> matrix;
-
-  if (r < 1 || c < 1) {
-    throw std::invalid_argument(
-        "Input arguments must be positive and not equal to zero");
-  }
-
-  matrix.resize(r);
-
-  for (int i = 0; i < r; i++)
-    matrix[i].resize(c);
-
-  return matrix;
-}
-
-void Matrix::DeleteMatrix() {
-  if (matrix_.size() || !matrix_.empty()) {
-    for (int i = 0; i < rows_; i++) matrix_[i].clear();
-
-    matrix_.clear();
-  }
-}
-
-void Matrix::PrintMatrix() const {
-  for (int i = 0; i < rows_; ++i) {
-    for (int j = 0; j < cols_; ++j) { std::cout << matrix_[i][j] << " "; }
-
-    std::cout << std::endl;
-  }
-}
-
 Matrix operator*(const double num, const Matrix& mat) {
   Matrix result = mat * num;
   return result;
 }
 
-void Matrix::LoadMatrixFromFile(const std::string& src) {
-  std::ifstream file(src);
-
-  if (!file.is_open()) {
-    throw std::invalid_argument(
-        "Something goes wrong, make sure that the file exist");
-  }
-
+void Matrix::PrintMatrix() const {
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j < cols_; ++j) {
-      const char c = file.get();
-
-      if (c == '0') {
-        matrix_[i][j] = 0;
-      } else if (c == '1') {
-        matrix_[i][j] = 1;
-      }
+      std::cout << matrix_[i * cols_ + j] << " ";
     }
+
+    std::cout << std::endl;
   }
 }
 
