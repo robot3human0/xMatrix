@@ -10,6 +10,8 @@ constexpr double EPS = 1e-8;
 
 class Matrix {
  public:
+  using MatrixType = std::vector<double>;
+
   Matrix();
   Matrix(int rows, int cols);
   Matrix(const Matrix& o);
@@ -23,12 +25,11 @@ class Matrix {
   void SetCols(int c);
   void Resize(int r, int c);
 
-  [[nodiscard]] bool sEqMatrix(const Matrix& other) const;
+  [[nodiscard]] bool IsEqual(const Matrix& other) const;
   void SumMatrix(const Matrix& other);
   void SubMatrix(const Matrix& other);
   void MulNumber(double num);
   void MulMatrix(const Matrix& other);
-  void LoadMatrixFromFile(const std::string& src);
   [[nodiscard]] Matrix Transpose() const;
   [[nodiscard]] Matrix CalcComplements() const;
   [[nodiscard]] double Determinant() const;
@@ -46,15 +47,14 @@ class Matrix {
   Matrix& operator*=(const Matrix& other);
   Matrix& operator*=(double num);
   double& operator()(int r, int c);
+  const double& operator()(int r, int c) const;
 
   void PrintMatrix() const;
 
  private:
   int rows_, cols_;
-  std::vector<std::vector<double>> matrix_;
-  std::vector<std::vector<double>> CreateMatrix(int r, int c);
-  void DeleteMatrix();
-  void MinorMatrix(Matrix* minor, int using_row, int using_col) const;
+  MatrixType matrix_;
+  void MinorMatrix(Matrix& minor, int using_row, int using_col) const;
 };
 
 }  // namespace xMatrix

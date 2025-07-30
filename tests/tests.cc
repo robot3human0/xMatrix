@@ -160,7 +160,7 @@ TEST(xMatrixTest, sEqMatrixEqual) {
   mat2(1, 0) = 3.0;
   mat2(1, 1) = 4.0;
 
-  EXPECT_TRUE(mat1.sEqMatrix(mat2));
+  EXPECT_TRUE(mat1.IsEqual(mat2));
 }
 
 // Unit test for sEqMatrix function with different matrices
@@ -177,7 +177,7 @@ TEST(xMatrixTest, sEqMatrixDifferent) {
   mat2(1, 0) = 3.0;
   mat2(1, 1) = 5.0;
 
-  EXPECT_FALSE(mat1.sEqMatrix(mat2));
+  EXPECT_FALSE(mat1.IsEqual(mat2));
 }
 
 // Unit test for sEqMatrix function with different dimensions
@@ -199,7 +199,7 @@ TEST(xMatrixTest, sEqMatrixDifferentDimensions) {
   mat2(2, 1) = 8.0;
   mat2(2, 2) = 9.0;
 
-  EXPECT_FALSE(mat1.sEqMatrix(mat2));
+  EXPECT_FALSE(mat1.IsEqual(mat2));
 }
 
 // Unit test for SumMatrix function with matrices of the same size
