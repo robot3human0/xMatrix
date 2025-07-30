@@ -1,4 +1,4 @@
-# Matrix Class
+# xMatrix lib
 
 A C++ implementation of a matrix class designed for 3D transformation matrices, used in a 3D Viewer project. The class supports basic matrix operations such as addition, subtraction, multiplication, transposition, determinant calculation, and matrix inversion.
 
